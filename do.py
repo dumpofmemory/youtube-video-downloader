@@ -2,6 +2,7 @@
 
 import sys
 from pytube import YouTube
+import re
 
 
 def get_user_input(user_choice):
@@ -15,6 +16,11 @@ def get_user_input(user_choice):
 
 def _load_app():
     url = input('Paste url: ')
+    try:
+        url_search_result = re.search(r'v=.*&', url).group(0)[2:-1]
+    except AttributeError:
+        url_search_result = re.findall(r'[^/]\w+', url)[3]
+
     youtube = YouTube(f'https://youtube.com/watch?v={url}')
 
     def process_user_choice(user_choice):
