@@ -15,43 +15,63 @@ def get_user_input(user_choice):
 
 
 def _load_app():
-    url = input('Paste url: ')
-    try:
-        url_search_result = re.search(r'v=.*&', url).group(0)[2:-1]
-    except AttributeError:
-        url_search_result = re.findall(r'[^/]\w+', url)[3]
+    url_search_result = ""
+    youtube = None
 
-    youtube = YouTube(f'https://youtube.com/watch?v={url}')
+    try:
+        url = input('Paste url: ')
+
+        try:
+            url_search_result = re.search(r'v=.*&', url).group(0)[2:-1]
+            print(url_search_result)
+        except AttributeError:
+            url_search_result = re.search(r'(.be/).*', url).group(0)[4:]
+            print(url_search_result)
+    except IndexError:
+        url = input('Paste url: ')
+    except Exception as e:
+        print(e)
+        url = input('Paste url: ')
+
+    while not url:
+        try:
+            url = input('Paste url: ')
+        except Exception as e:
+            print(e)
+            url = input('Paste url: ')
+
+    if url_search_result:
+        youtube = YouTube(f'https://youtube.com/watch?v={url_search_result}')
 
     def process_user_choice(user_choice):
         itag = None
         if user_choice == 'adaptive':
             list_of_all_adaptive = youtube.streams.filter(adaptive=True)
 
-            print("All available video/audio for download:")
-            [print(video) for video in list_of_all_adaptive]
-
-            itag = (int(input('Provide itag number\nitag=')))
-            while not itag:
-                itag = (int(input('Provide itag number\nitag=')))
+            itag = get_itag(list_of_all_adaptive)
 
         if user_choice == 'audio-only':
             list_all_audio_only = youtube.streams.filter(only_audio=True)
-            print("All available audio for download:")
-            [print(audio) for audio in list_all_audio_only]
 
-            itag = (int(input('Provide itag number\nitag=')))
-            while not itag:
-                itag = (int(input('Provide itag number\nitag=')))
+            itag = get_itag(list_all_audio_only)
 
         if user_choice == 'progressive':
             list_all_progressive = youtube.streams.filter(progressive=True)
-            print("All available downloads:")
-            [print(video) for video in list_all_progressive]
 
-        if itag is not None:
-            selected_video = youtube.streams.get_by_itag(itag)
-            selected_video.download()
+            itag = get_itag(list_all_progressive)
+
+        selected_video = youtube.streams.get_by_itag(itag)
+        selected_video.download()
+
+    def get_itag(list_of_downloads):
+        print("All available video/audio for download:")
+        [print(list_item) for list_item in list_of_downloads]
+
+        itag = (int(input('Provide itag number\nitag=')))
+        while not itag:
+            itag = (int(input('Provide itag number\nitag=')))
+
+        return itag
 
     user_input = None
     print(
