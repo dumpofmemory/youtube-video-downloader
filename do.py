@@ -3,6 +3,10 @@
 import sys
 from pytube import YouTube
 import re
+import os
+
+os.environ["IMAGEIO_FFMPEG_EXE"] = "/opt/homebrew/Cellar/ffmpeg/6.0/bin/ffmpeg"
+from moviepy.editor import *
 
 
 def get_user_input(user_choice):
@@ -61,7 +65,8 @@ def _load_app():
             itag = get_itag(list_all_progressive)
 
         selected_video = youtube.streams.get_by_itag(itag)
-        selected_video.download()
+        download = selected_video.download()
+        return download
 
     def get_itag(list_of_downloads):
         print("All available video/audio for download:")
@@ -115,7 +120,16 @@ def _load_app():
             print("Aborting and exiting script execution")
             sys.exit()
 
-    process_user_choice(user_choice=user_input)
+    user_choice_mp3 = input("Convert to mp3? (y/n): ")
+    if user_choice_mp3 == "y":
+        res_download = process_user_choice(user_choice=user_input)
+        download_filename = \
+        re.sub('/Users/shajiyev/PycharmProjects/youtube-video-downloader/', '', res_download).split('.mp4')[0]
+        print(res_download)
+        video = VideoFileClip(res_download)
+        video.audio.write_audiofile(f'{download_filename}.mp3')
+    else:
+        process_user_choice(user_choice=user_input)
 
 
 if __name__ == '__main__':
