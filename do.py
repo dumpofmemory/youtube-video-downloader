@@ -9,6 +9,10 @@ os.environ["IMAGEIO_FFMPEG_EXE"] = "/opt/homebrew/Cellar/ffmpeg/6.0/bin/ffmpeg"
 from moviepy.editor import *
 
 
+current_working_directory = os.getcwd()
+download_path = f"{current_working_directory}/downloads"
+
+
 def get_user_input(user_choice):
     switcher = {
         1: 'adaptive',
@@ -65,7 +69,7 @@ def _load_app():
             itag = get_itag(list_all_progressive)
 
         selected_video = youtube.streams.get_by_itag(itag)
-        download = selected_video.download()
+        download = selected_video.download(output_path=download_path)
         return download
 
     def get_itag(list_of_downloads):
@@ -124,7 +128,7 @@ def _load_app():
     if user_choice_mp3 == "y":
         res_download = process_user_choice(user_choice=user_input)
         download_filename = \
-        re.sub('/Users/shajiyev/PycharmProjects/youtube-video-downloader/', '', res_download).split('.mp4')[0]
+            re.sub(current_working_directory, '', res_download).split('.mp4')[0]
         print(res_download)
         video = VideoFileClip(res_download)
         video.audio.write_audiofile(f'{download_filename}.mp3')
