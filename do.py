@@ -5,8 +5,13 @@ from pytube import YouTube
 import re
 import os
 
-os.environ["IMAGEIO_FFMPEG_EXE"] = "/opt/homebrew/Cellar/ffmpeg/6.0/bin/ffmpeg"
+os.environ["IMAGEIO_FFMPEG_EXE"] = "/opt/homebrew/Cellar/ffmpeg/6.0_1/bin/ffmpeg"
 from moviepy.editor import *
+
+
+def convert_mp4_to_mp3(mp4_path, mp3_path):
+    command = f"ffmpeg -i {mp4_path} -vn -ar 44100 -ac 2 -b:a 192k {mp3_path}"
+    os.system(command)
 
 
 current_working_directory = os.getcwd()
@@ -62,6 +67,11 @@ def _load_app():
             list_all_audio_only = youtube.streams.filter(only_audio=True)
 
             itag = get_itag(list_all_audio_only)
+
+            selected_video = youtube.streams.get_by_itag(itag)
+            download = selected_video.download(output_path=download_path)
+
+            convert_mp4_to_mp3(download, f'{download_path}/output.mp3')
 
         if user_choice == 'progressive':
             list_all_progressive = youtube.streams.filter(progressive=True)
@@ -124,16 +134,17 @@ def _load_app():
             print("Aborting and exiting script execution")
             sys.exit()
 
-    user_choice_mp3 = input("Convert to mp3? (y/n): ")
-    if user_choice_mp3 == "y":
-        res_download = process_user_choice(user_choice=user_input)
-        download_filename = \
-            re.sub(current_working_directory, '', res_download).split('.mp4')[0]
-        print(res_download)
-        video = VideoFileClip(res_download)
-        video.audio.write_audiofile(f'{download_filename}.mp3')
-    else:
-        process_user_choice(user_choice=user_input)
+    if user_input != 'audio-only':
+        user_choice_mp3 = input("Rename .mp4 file to .mp3? (y/n): ")
+        if user_choice_mp3 == "y":
+            res_download = process_user_choice(user_choice=user_input)
+            download_filename = \
+                re.sub(current_working_directory, '', res_download).split('.mp4')[0]
+            print(res_download)
+            video = VideoFileClip(res_download)
+            video.audio.write_audiofile(f'{download_filename}.mp3')
+
+    process_user_choice(user_choice=user_input)
 
 
 if __name__ == '__main__':
