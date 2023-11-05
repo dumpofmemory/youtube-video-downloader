@@ -10,7 +10,9 @@ from moviepy.editor import *
 
 
 def convert_mp4_to_mp3(mp4_path, mp3_path):
-    command = f"ffmpeg -i {mp4_path} -vn -ar 44100 -ac 2 -b:a 192k {mp3_path}"
+    print(mp4_path)
+    print(mp3_path)
+    command = f"ffmpeg -i '{mp4_path}' -vn -ar 44100 -ac 2 -b:a 192k '{mp3_path}'"
     os.system(command)
 
 
@@ -69,9 +71,10 @@ def _load_app():
             itag = get_itag(list_all_audio_only)
 
             selected_video = youtube.streams.get_by_itag(itag)
-            download = selected_video.download(output_path=download_path)
+            downloaded_video_title = selected_video.title
+            downloaded_video = selected_video.download(output_path=download_path)
 
-            convert_mp4_to_mp3(download, f'{download_path}/output.mp3')
+            convert_mp4_to_mp3(downloaded_video, f'{download_path}/{downloaded_video_title}.mp3')
 
         if user_choice == 'progressive':
             list_all_progressive = youtube.streams.filter(progressive=True)
